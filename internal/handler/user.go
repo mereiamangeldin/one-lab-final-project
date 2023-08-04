@@ -1,12 +1,25 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mereiamangeldin/One-lab-Homework-1/api"
 	"github.com/mereiamangeldin/One-lab-Homework-1/internal/entity"
 	"log"
 	"net/http"
 )
+
+// createUser registration new User
+//  @Summary      Create User
+//  @Description  Create new User
+//  @Tags         auth
+//  @Accept       json
+//  @Produce      json
+//  @Param        req body api.RegisterRequest true "req body"
+//  @Success      201
+//  @Failure      400  {object} api.Error
+//  @Failure      500  {object}  api.Error
+//  @Router       /register [post]
 
 func (h *Handler) createUser(ctx *gin.Context) {
 	var req api.RegisterRequest
@@ -80,11 +93,45 @@ func (h *Handler) userItems(ctx *gin.Context) {
 		return
 	}
 
-	// logic
+	items, err := h.srvs.GetuserItems(ctx, userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, &api.Error{
+			Code:    -2,
+			Message: err.Error(),
+		})
+		return
+	}
 
-	ctx.JSON(http.StatusOK, &api.Ok{
-		Code:    0,
-		Message: "success",
-		Data:    userID,
-	})
+	ctx.JSON(http.StatusOK, items)
+}
+
+func (h *Handler) buyItem(ctx *gin.Context) {
+	id := ctx.Param("id")
+
+	itemID := 0
+	_, err := fmt.Sscanf(id, "%d", &itemID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	userID, ok := ctx.MustGet(authUserID).(int64)
+	if !ok {
+		log.Printf("can't get userID")
+		ctx.JSON(http.StatusBadRequest, &api.Error{
+			Code:    -1,
+			Message: "can't get user id from auth",
+		})
+		return
+	}
+	err = h.srvs.BuyItem(ctx, int64(itemID), userID)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, &api.Error{
+			Code:    -1,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
 }

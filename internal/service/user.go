@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/mereiamangeldin/One-lab-Homework-1/internal/entity"
 	"github.com/mereiamangeldin/One-lab-Homework-1/pkg/util"
+	"time"
 )
 
 func (m *Manager) CreateUser(ctx context.Context, u *entity.User) error {
@@ -55,4 +56,40 @@ func (m *Manager) VerifyToken(token string) (int64, error) {
 	}
 
 	return payload.UserID, nil
+}
+
+func (m *Manager) BuyItem(ctx context.Context, itemID int64, userID int64) error {
+	item, err := m.GetItemByID(ctx, itemID)
+	if err != nil {
+		return err
+	}
+	userBalance, err := m.Repository.GetUserBalance(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if item.Cost > userBalance.Amount {
+		return errors.New("balance is not enough")
+	}
+	transaction := entity.Transactions{
+		UserID:    userID,
+		ItemID:    itemID,
+		Amount:    item.Cost,
+		CreatedAt: time.Now(),
+	}
+	err = m.Repository.CreateTransaction(ctx, transaction)
+
+	if err != nil {
+		return err
+	}
+
+	userBalance.Amount = userBalance.Amount - item.Cost
+	err = m.Repository.UpdateUserBalance(ctx, *userBalance)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Manager) GetUserItems(ctx context.Context, userID int64) ([]entity.Item, error) {
+	return m.Repository.GetUserItems(ctx, userID)
 }

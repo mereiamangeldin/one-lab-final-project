@@ -1,0 +1,17 @@
+basePath: /api/v1
+host: localhost:8080
+info:
+  contact:
+    email: me_amangeldin@kbtu.kz
+    name: Merei
+  description: API for SHOP application
+  termsOfService: http://swagger.io/terms/
+  title: SHOP
+  version: 0.0.1
+paths: {}
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

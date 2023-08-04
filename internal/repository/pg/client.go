@@ -11,6 +11,8 @@ import (
 
 const usersTable = "users"
 const itemsTable = "items"
+const balanceTable = "balance"
+const transactionTable = "transactions"
 
 type Postgres struct {
 	host     string

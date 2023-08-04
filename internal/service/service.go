@@ -14,4 +14,6 @@ type Service interface {
 	GetItemByID(ctx context.Context, id int64) (entity.Item, error)
 	DeleteItem(ctx context.Context, id int64) error
 	UpdateItem(ctx context.Context, id int64, item entity.Item) error
+	BuyItem(ctx context.Context, itemID int64, userID int64) error
+	GetUserItems(ctx context.Context, userID int64) ([]entity.Item, error)
 }
